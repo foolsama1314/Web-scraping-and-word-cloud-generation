@@ -1,0 +1,8 @@
+Flask>=3.0,<4.0
+requests>=2.31,<3.0
+beautifulsoup4>=4.12,<5.0
+lxml>=5.0
+jieba>=0.42.1
+wordcloud>=1.9.3
+Pillow>=10.0
+numpy>=1.24
