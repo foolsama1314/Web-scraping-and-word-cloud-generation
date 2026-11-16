@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · 词云工坊</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%23f25c2a'/%3E%3Cpath d='M12 26a5 5 0 0 1 .4-10 8 8 0 0 1 15 1.8 4.6 4.6 0 0 1 1.6 8.2z' fill='%23fffdf8'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --paper: #f5f2ea;
+      --card: #fffdf8;
+      --ink: #17161d;
+      --ink-soft: #3f3d4f;
+      --muted: #7a7688;
+      --faint: #a9a4b4;
+      --line: #e9e2d5;
+      --line-strong: #d8cfbe;
+      --coral: #f25c2a;
+      --coral-deep: #d94414;
+      --danger: #cf3f1e;
+      --ok: #2f6d43;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(900px 500px at 12% -10%, #ffe6d5 0%, transparent 60%),
+        radial-gradient(800px 500px at 100% 110%, #e7e0ff 0%, transparent 55%),
+        var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 40px 34px 30px;
+      box-shadow: 0 30px 60px -30px rgba(23, 22, 29, 0.28), 0 2px 6px rgba(23, 22, 29, 0.04);
+      animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ff9a3d, #ef4b22);
+      display: grid;
+      place-items: center;
+      flex: none;
+      box-shadow: 0 8px 18px -8px rgba(239, 75, 34, 0.7);
+    }
+
+    .brand-text strong {
+      display: block;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 19px;
+    }
+
+    .brand-text small {
+      display: block;
+      margin-top: 2px;
+      font-size: 11.5px;
+      color: var(--faint);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 27px;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      margin: 0 0 26px;
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-soft);
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 12px;
+      background: #fff;
+      transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px rgba(242, 92, 42, 0.1);
+    }
+
+    .input-wrap.is-error {
+      border-color: var(--danger);
+      background: #fff8f5;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .input-wrap > svg {
+      flex: none;
+      margin-left: 13px;
+      color: var(--faint);
+    }
+
+    .input-wrap input {
+      flex: 1;
+      min-width: 0;
+      height: 46px;
+      padding: 0 12px;
+      border: 0;
+      background: transparent;
+      font: inherit;
+      font-size: 14.5px;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .input-wrap input::placeholder { color: #bdb8c6; }
+
+    .toggle-eye {
+      flex: none;
+      width: 40px;
+      height: 40px;
+      margin-right: 3px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--faint);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: color 0.16s, background-color 0.16s;
+    }
+
+    .toggle-eye:hover { color: var(--ink-soft); background: #f6f3ec; }
+
+    .row-between {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 4px 0 22px;
+      font-size: 12.5px;
+    }
+
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox input {
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.16s;
+    }
+
+    .checkbox input:checked {
+      background: var(--coral);
+      border-color: var(--coral);
+    }
+
+    .checkbox input:checked::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 4px;
+      height: 8px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(43deg);
+    }
+
+    .link {
+      color: var(--coral-deep);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .link:hover { text-decoration: underline; }
+
+    .btn-login {
+      width: 100%;
+      height: 50px;
+      border: 0;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #ff9a3d, #ef4b22 70%, #d94414);
+      color: #fff;
+      font: inherit;
+      font-size: 15.5px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 12px 26px -12px rgba(239, 75, 34, 0.8);
+      transition: transform 0.16s, box-shadow 0.16s, filter 0.16s;
+    }
+
+    .btn-login:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px -12px rgba(239, 75, 34, 0.85);
+    }
+
+    .btn-login:disabled { cursor: progress; filter: saturate(0.65) brightness(1.02); }
+
+    .btn-login .spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      margin-right: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      vertical-align: -2px;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .msg {
+      margin: 14px 0 0;
+      min-height: 18px;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .msg.error { color: var(--danger); }
+    .msg.ok { color: var(--ok); font-weight: 600; }
+
+    .demo {
+      margin-top: 24px;
+      padding: 14px 16px;
+      border: 1.5px dashed var(--line-strong);
+      border-radius: 13px;
+      background: rgba(255, 253, 248, 0.7);
+    }
+
+    .demo-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 9px;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .demo-head i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--coral);
+    }
+
+    .demo-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 5px 0;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    .demo-row span { color: var(--muted); }
+
+    .demo-row code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      background: #f1ece1;
+      border-radius: 6px;
+      padding: 2px 8px;
+      user-select: all;
+      cursor: pointer;
+    }
+
+    .demo-tip {
+      margin: 8px 0 0;
+      font-size: 11.5px;
+      color: var(--faint);
+      line-height: 1.5;
+    }
+
+    .admin-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 13px 16px;
+      border: 1.5px solid rgba(63, 61, 143, 0.22);
+      border-radius: 13px;
+      background: linear-gradient(135deg, rgba(238, 237, 250, 0.9), rgba(255, 253, 248, 0.9));
+      color: #3f3d8f;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .admin-entry:hover {
+      border-color: #3f3d8f;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px -16px rgba(63, 61, 143, 0.8);
+    }
+
+    .admin-entry b {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 800;
+    }
+
+    .admin-entry small {
+      display: block;
+      margin-top: 2px;
+      font-size: 11.5px;
+      color: #7a76a8;
+    }
+
+    @media (max-width: 460px) {
+      body { padding: 16px; }
+      .login-card { padding: 30px 22px 24px; border-radius: 18px; }
+      h1 { font-size: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<main class="login-card">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 40 40" width="40" height="40">
+        <path d="M12 26a5 5 0 0 1 .4-10 8 8 0 0 1 15 1.8 4.6 4.6 0 0 1 1.6 8.2z" fill="#fffdf8"/>
+      </svg>
+    </span>
+    <span class="brand-text">
+      <strong>词云工坊</strong>
+      <small>CloudLet Studio</small>
+    </span>
+  </div>
+
+  <h1>欢迎回来</h1>
+  <p class="subtitle">登录后即可继续生成与管理你的网页词云。</p>
+
+  <form id="loginForm" novalidate>
+    <div class="field">
+      <label for="account">账号</label>
+      <div class="input-wrap" id="accountWrap">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M4.8 20c.7-3.7 3.7-5.6 7.2-5.6s6.5 1.9 7.2 5.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <input id="account" name="account" type="text" placeholder="请输入账号"
+               autocomplete="username" spellcheck="false" autofocus>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="password">密码</label>
+      <div class="input-wrap" id="passwordWrap">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <rect x="5" y="10.5" width="14" height="9.5" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M8.4 10.5V7.8a3.6 3.6 0 0 1 7.2 0v2.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <input id="password" name="password" type="password" placeholder="请输入密码"
+               autocomplete="current-password">
+        <button type="button" class="toggle-eye" id="toggleEye" aria-label="显示密码" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="2.9" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="row-between">
+      <label class="checkbox">
+        <input type="checkbox" id="remember">
+        记住账号
+      </label>
+      <a class="link" href="#" id="forgotLink">忘记密码？</a>
+    </div>
+
+    <button type="submit" class="btn-login" id="loginBtn">登 录</button>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </form>
+
+  <a class="admin-entry" href="#" id="adminEntry">
+    <span>
+      <b>进入数据管理后台</b>
+      <small>查看爬取数据、分词统计与增删改查</small>
+    </span>
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {% if demo_accounts %}
+  <section class="demo">
+    <div class="demo-head"><i></i>演示账号</div>
+    {% for item in demo_accounts %}
+    <div class="demo-row">
+      <span>账号</span>
+      <code data-fill="account">{{ item.account }}</code>
+    </div>
+    <div class="demo-row">
+      <span>密码</span>
+      <code data-fill="password">{{ item.password }}</code>
+    </div>
+    {% endfor %}
+    <p class="demo-tip">点击账号或密码可直接填入上方输入框。</p>
+  </section>
+  {% endif %}
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var nextUrl = {{ next_url | tojson }};
+  var targetNext = nextUrl || "/";
+  var STORAGE_KEY = "wcs_login_account";
+
+  var el = {
+    form: document.getElementById("loginForm"),
+    account: document.getElementById("account"),
+    password: document.getElementById("password"),
+    accountWrap: document.getElementById("accountWrap"),
+    passwordWrap: document.getElementById("passwordWrap"),
+    toggleEye: document.getElementById("toggleEye"),
+    remember: document.getElementById("remember"),
+    loginBtn: document.getElementById("loginBtn"),
+    msg: document.getElementById("msg"),
+    forgotLink: document.getElementById("forgotLink")
+  };
+
+  /* 恢复上次记住的账号 */
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      el.account.value = saved;
+      el.remember.checked = true;
+      el.password.focus();
+    }
+  } catch (err) {}
+
+  function setMsg(text, type) {
+    el.msg.textContent = text || "";
+    el.msg.className = "msg" + (type ? " " + type : "");
+  }
+
+  function markError(wrap, node) {
+    wrap.classList.remove("is-error");
+    void wrap.offsetWidth;
+    wrap.classList.add("is-error");
+    setTimeout(function () { wrap.classList.remove("is-error"); }, 1600);
+    if (node) node.focus();
+  }
+
+  /* 密码可见切换 */
+  el.toggleEye.addEventListener("click", function () {
+    var visible = el.password.type === "password";
+    el.password.type = visible ? "text" : "password";
+    el.toggleEye.setAttribute("aria-pressed", visible ? "true" : "false");
+    el.toggleEye.setAttribute("aria-label", visible ? "隐藏密码" : "显示密码");
+    el.toggleEye.style.color = visible ? "#f25c2a" : "";
+    el.password.focus();
+  });
+
+  /* 演示账号一键填充 */
+  document.querySelectorAll("[data-fill]").forEach(function (node) {
+    node.title = "点击填入";
+    node.addEventListener("click", function () {
+      var target = node.dataset.fill;
+      var value = node.textContent.trim();
+      if (target === "account") {
+        el.account.value = value;
+        el.password.focus();
+      } else {
+        el.password.value = value;
+      }
+      setMsg("已填入演示" + (target === "account" ? "账号" : "密码"), "ok");
+      setTimeout(function () { setMsg(""); }, 1400);
+    });
+  });
+
+  /* 登录提交 */
+  el.form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    var account = el.account.value.trim();
+    var password = el.password.value;
+
+    if (!account) {
+      setMsg("请输入账号", "error");
+      markError(el.accountWrap, el.account);
+      return;
+    }
+    if (!password) {
+      setMsg("请输入密码", "error");
+      markError(el.passwordWrap, el.password);
+      return;
+    }
+
+    setMsg("");
+    el.loginBtn.disabled = true;
+    el.loginBtn.innerHTML = '<span class="spinner"></span>登录中…';
+
+    try {
+      var response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: account, password: password })
+      });
+      var data = await response.json().catch(function () { return null; });
+
+      if (!response.ok || !data || data.ok === false) {
+        var message = (data && data.error && data.error.message) || "登录失败，请稍后重试。";
+        throw new Error(message);
+      }
+
+      try {
+        if (el.remember.checked) localStorage.setItem(STORAGE_KEY, account);
+        else localStorage.removeItem(STORAGE_KEY);
+      } catch (err) {}
+
+      setMsg("登录成功，正在进入…", "ok");
+      window.location.replace(targetNext || "/");
+    } catch (err) {
+      el.loginBtn.disabled = false;
+      el.loginBtn.textContent = "登 录";
+      setMsg(err.message || "登录失败，请稍后重试。", "error");
+      markError(el.passwordWrap, el.password);
+    }
+  });
+
+  el.forgotLink.addEventListener("click", function (event) {
+    event.preventDefault();
+    setMsg("演示环境暂不支持找回密码，请使用下方演示账号登录", "error");
+  });
+
+  /* 登录并直接进入管理后台 */
+  document.getElementById("adminEntry").addEventListener("click", function (event) {
+    event.preventDefault();
+    targetNext = "/admin";
+    if (el.form.requestSubmit) el.form.requestSubmit();
+    else el.form.dispatchEvent(new Event("submit", { cancelable: true }));
+  });
+
+  if (!el.account.value) el.account.focus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# 运行时数据（爬取正文、词云图片、数据库、历史、自定义词库）
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# 日志与系统文件
+*.log
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.idea/
+.vscode/

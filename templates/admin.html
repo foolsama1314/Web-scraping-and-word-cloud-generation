@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据管理后台 · 词云工坊</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%233f3d8f'/%3E%3Cpath d='M12 26a5 5 0 0 1 .4-10 8 8 0 0 1 15 1.8 4.6 4.6 0 0 1 1.6 8.2z' fill='%23fffdf8'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --paper: #f5f2ea;
+      --paper-deep: #ece7db;
+      --card: #fffdf8;
+      --ink: #17161d;
+      --ink-soft: #3f3d4f;
+      --muted: #7a7688;
+      --faint: #a9a4b4;
+      --line: #e9e2d5;
+      --line-strong: #d8cfbe;
+      --coral: #f25c2a;
+      --coral-deep: #d94414;
+      --coral-tint: #fff1ea;
+      --indigo: #3f3d8f;
+      --indigo-tint: #eeedfa;
+      --lime: #86a719;
+      --danger: #cf3f1e;
+      --ok: #2f6d43;
+      --shadow: 0 18px 40px -24px rgba(23, 22, 29, 0.3);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea { font: inherit; color: inherit; }
+
+    /* 顶栏 */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(255, 253, 248, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 13px 28px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #5b57c9, #3f3d8f);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 16px -8px rgba(63, 61, 143, 0.8);
+    }
+
+    .brand-text strong {
+      display: block;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 17px;
+    }
+
+    .brand-text small { font-size: 11px; color: var(--faint); letter-spacing: 0.12em; }
+
+    .topbar-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 9px;
+      border: 1px solid var(--line-strong);
+      background: #fff;
+      color: var(--ink-soft);
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.16s;
+    }
+
+    .link-btn:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-tint); }
+
+    .user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 6px 4px 4px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    .user-avatar {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #6c5ce7, #3f3d8f);
+      color: #fff;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+
+    /* 主体 */
+    .page { max-width: 1360px; margin: 0 auto; padding: 26px 28px 60px; }
+
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+
+    .page-head h1 {
+      margin: 0;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 27px;
+      letter-spacing: -0.01em;
+    }
+
+    .page-head p { margin: 5px 0 0; font-size: 12.5px; color: var(--muted); }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 40px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff9a3d, #ef4b22);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 22px -12px rgba(239, 75, 34, 0.85);
+      transition: transform 0.16s, box-shadow 0.16s;
+    }
+
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 26px -12px rgba(239, 75, 34, 0.9); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* 指标卡 */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 6px rgba(23, 22, 29, 0.03);
+    }
+
+    .kpi-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+
+    .kpi-value {
+      margin-top: 7px;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 26px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .kpi-sub { margin-top: 4px; font-size: 11.5px; color: var(--faint); }
+
+    /* 图表区 */
+    .charts {
+      display: grid;
+      grid-template-columns: 1.05fr 1.35fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 6px rgba(23, 22, 29, 0.03);
+    }
+
+    .card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+    .card-head h2 { margin: 0; font-size: 13.5px; font-weight: 800; }
+    .card-head small { font-size: 11px; color: var(--faint); }
+
+    .bar-row { display: grid; grid-template-columns: 92px 1fr 52px; align-items: center; gap: 8px; margin-bottom: 9px; font-size: 11.5px; }
+    .bar-label { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 9px; border-radius: 999px; background: var(--paper-deep); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ffb020, #f25c2a); transition: width 0.45s ease; }
+    .bar-fill.indigo { background: linear-gradient(90deg, #8e83f0, #3f3d8f); }
+    .bar-fill.lime { background: linear-gradient(90deg, #cfe06a, #86a719); }
+    .bar-value { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    .trend { display: flex; align-items: flex-end; gap: 6px; height: 96px; margin-top: 4px; }
+    .trend-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; height: 100%; }
+    .trend-bar { width: 100%; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #8e83f0, #3f3d8f); min-height: 3px; transition: height 0.4s ease; }
+    .trend-day { font-size: 10px; color: var(--faint); }
+
+    /* 表格面板 */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 253, 248, 0.7);
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex: 1 1 240px;
+      min-width: 180px;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 9px;
+      background: #fff;
+      transition: border-color 0.16s, box-shadow 0.16s;
+    }
+
+    .search-box:focus-within { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(63, 61, 143, 0.1); }
+
+    .search-box svg { margin-left: 10px; color: var(--faint); flex: none; }
+
+    .search-box input {
+      flex: 1;
+      min-width: 0;
+      height: 36px;
+      border: 0;
+      padding: 0 10px;
+      background: transparent;
+      outline: none;
+      font-size: 13px;
+    }
+
+    select, .mini-input {
+      height: 36px;
+      padding: 0 10px;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 9px;
+      background: #fff;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus { border-color: var(--indigo); }
+
+    .toolbar .spacer { flex: 1; }
+
+    .btn-ghost {
+      height: 36px;
+      padding: 0 14px;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.16s;
+    }
+
+    .btn-ghost:hover { border-color: var(--ink-soft); transform: translateY(-1px); }
+    .btn-ghost.danger { color: var(--danger); border-color: rgba(207, 63, 30, 0.28); }
+    .btn-ghost.danger:hover { background: #fdf1ee; border-color: var(--danger); }
+    .btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    tbody td { padding: 11px 12px; border-bottom: 1px solid rgba(233, 226, 213, 0.7); vertical-align: middle; }
+
+    tbody tr:hover { background: rgba(245, 242, 234, 0.6); }
+
+    tbody tr.is-deleted { background: #fbf6f5; }
+    tbody tr.is-deleted td { color: var(--faint); }
+
+    .cell-title { max-width: 300px; }
+    .cell-title b { display: block; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cell-title small { display: block; margin-top: 3px; font-size: 11px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .tag.host { background: var(--indigo-tint); color: var(--indigo); }
+    .tag.active { background: #eef8f0; color: var(--ok); }
+    .tag.archived { background: #fff6e5; color: #8a6511; }
+    .tag.deleted { background: #fdeeea; color: var(--danger); }
+
+    .num { font-variant-numeric: tabular-nums; color: var(--muted); }
+
+    .row-actions { display: flex; gap: 6px; white-space: nowrap; }
+
+    .mini-btn {
+      height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .mini-btn:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-tint); }
+    .mini-btn.danger:hover { border-color: var(--danger); color: var(--danger); background: #fdf1ee; }
+
+    .empty-row td { padding: 46px 12px; text-align: center; color: var(--faint); }
+
+    .pager {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .pager-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* 弹窗 */
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(23, 22, 29, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fade 0.18s ease;
+    }
+
+    .modal-mask[hidden] { display: none; }
+
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal {
+      width: 100%;
+      max-width: 620px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 40px 80px -40px rgba(23, 22, 29, 0.6);
+      animation: rise 0.24s ease;
+      overflow: hidden;
+    }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-head h3 { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: 18px; }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--faint);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .modal-close:hover { background: var(--paper); color: var(--ink); }
+
+    .modal-body { padding: 18px 20px; overflow-y: auto; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+    .form-field label span { font-weight: 500; color: var(--faint); }
+
+    .form-field input, .form-field select, .form-field textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 9px;
+      background: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.16s, box-shadow 0.16s;
+    }
+
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      border-color: var(--indigo);
+      box-shadow: 0 0 0 3px rgba(63, 61, 143, 0.1);
+    }
+
+    .form-field textarea { min-height: 150px; resize: vertical; line-height: 1.65; }
+    .form-field .hint { font-size: 11px; color: var(--faint); }
+
+    .modal-foot {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--line);
+      background: rgba(245, 242, 234, 0.5);
+    }
+
+    .modal-error {
+      margin-right: auto;
+      font-size: 12px;
+      color: var(--danger);
+      max-width: 60%;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 90;
+      max-width: 360px;
+      padding: 12px 16px;
+      border-radius: 11px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 13px;
+      box-shadow: 0 24px 50px -20px rgba(23, 22, 29, 0.6);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: opacity 0.24s, transform 0.24s;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--danger); }
+    .toast.success { background: var(--ok); }
+
+    @media (max-width: 1080px) {
+      .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .charts { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .page { padding: 18px 14px 48px; }
+      .topbar-inner { padding: 10px 14px; gap: 10px; }
+      .brand-text small, .user-chip .user-name { display: none; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .form-grid { grid-template-columns: 1fr; }
+      .page-head { flex-direction: column; align-items: flex-start; }
+      .toast { left: 14px; right: 14px; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="36" height="36">
+          <path d="M12 26a5 5 0 0 1 .4-10 8 8 0 0 1 15 1.8 4.6 4.6 0 0 1 1.6 8.2z" fill="#fffdf8"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <strong>数据管理后台</strong>
+        <small>SQLITE DATA CENTER</small>
+      </span>
+    </div>
+    <div class="topbar-actions">
+      <a class="link-btn" href="/">← 返回词云工坊</a>
+      <div class="user-chip">
+        <span class="user-avatar">{{ (user or "访")[:1] | upper }}</span>
+        <span class="user-name">{{ user or "访客" }}</span>
+      </div>
+      <button type="button" class="link-btn" id="logoutBtn">退出</button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <h1>爬取数据与分词结果</h1>
+      <p>数据全部存储于本地 SQLite（data/wordcloud.db），支持条件查询、分页、编辑与逻辑 / 物理删除。</p>
+    </div>
+    <button type="button" class="btn-primary" id="createBtn">
+      <svg viewBox="0 0 24 24" width="17" height="17"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      新增数据
+    </button>
+  </div>
+
+  <!-- 指标看板 -->
+  <section class="kpi-grid" id="kpiGrid">
+    <div class="kpi"><div class="kpi-label">总数据量</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub" id="kpiTotalSub">条</div></div>
+    <div class="kpi"><div class="kpi-label">有效数据</div><div class="kpi-value" id="kpiActive">—</div><div class="kpi-sub" id="kpiActiveSub">可参与词云生成</div></div>
+    <div class="kpi"><div class="kpi-label">已删除</div><div class="kpi-value" id="kpiDeleted">—</div><div class="kpi-sub">逻辑删除，可恢复</div></div>
+    <div class="kpi"><div class="kpi-label">分词词条</div><div class="kpi-value" id="kpiWords">—</div><div class="kpi-sub" id="kpiWordsSub">去重词数</div></div>
+    <div class="kpi"><div class="kpi-label">平均正文</div><div class="kpi-value" id="kpiChars">—</div><div class="kpi-sub">字 / 条</div></div>
+  </section>
+
+  <!-- 图表 -->
+  <section class="charts">
+    <div class="card">
+      <div class="card-head"><h2>来源占比</h2><small>按域名</small></div>
+      <div id="hostChart"><div class="bar-row"><span class="bar-label">暂无数据</span><span class="bar-track"></span><span class="bar-value">—</span></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>分词频次 Top 12</h2><small>跨页面聚合</small></div>
+      <div id="wordChart"><div class="bar-row"><span class="bar-label">暂无数据</span><span class="bar-track"></span><span class="bar-value">—</span></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>近 7 天抓取</h2><small>条 / 天</small></div>
+      <div class="trend" id="trendChart"></div>
+    </div>
+  </section>
+
+  <!-- 数据列表 -->
+  <section class="panel">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input id="searchInput" type="search" placeholder="搜索标题、网址或正文…" autocomplete="off">
+      </div>
+      <select id="hostFilter" aria-label="按来源筛选"><option value="">全部来源</option></select>
+      <select id="statusFilter" aria-label="按状态筛选">
+        <option value="">全部状态</option>
+        <option value="active">正常</option>
+        <option value="archived">已归档</option>
+        <option value="deleted">已删除</option>
+      </select>
+      <select id="sortSelect" aria-label="排序">
+        <option value="created_at:desc">最新抓取</option>
+        <option value="created_at:asc">最早抓取</option>
+        <option value="char_count:desc">正文最长</option>
+        <option value="title:asc">标题 A→Z</option>
+      </select>
+      <select id="sizeSelect" aria-label="每页条数">
+        <option value="10">10 条/页</option>
+        <option value="20" selected>20 条/页</option>
+        <option value="50">50 条/页</option>
+      </select>
+      <span class="spacer"></span>
+      <button type="button" class="btn-ghost danger" id="batchDeleteBtn" disabled>批量删除</button>
+      <button type="button" class="btn-ghost" id="refreshBtn">刷新</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34px"><input type="checkbox" id="checkAll" aria-label="全选"></th>
+            <th style="width:56px">ID</th>
+            <th>标题 / 来源网址</th>
+            <th style="width:150px">来源域名</th>
+            <th style="width:78px">正文字数</th>
+            <th style="width:70px">词条</th>
+            <th style="width:82px">状态</th>
+            <th style="width:126px">抓取时间</th>
+            <th style="width:200px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr class="empty-row"><td colspan="9">加载中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <span id="pagerInfo">—</span>
+      <div class="pager-actions">
+        <button type="button" class="btn-ghost" id="prevBtn">上一页</button>
+        <span id="pageIndicator">1 / 1</span>
+        <button type="button" class="btn-ghost" id="nextBtn">下一页</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- 新增 / 编辑弹窗 -->
+<div class="modal-mask" id="modalMask" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <h3 id="modalTitle">新增数据</h3>
+      <button type="button" class="modal-close" id="modalClose" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full">
+          <label for="fUrl">来源网址 <span>（必填，http / https）</span></label>
+          <input id="fUrl" type="text" placeholder="https://www.example.com/article" spellcheck="false">
+        </div>
+        <div class="form-field">
+          <label for="fTitle">标题</label>
+          <input id="fTitle" type="text" placeholder="留空则显示为未命名页面">
+        </div>
+        <div class="form-field">
+          <label for="fHost">来源域名 <span>（留空自动解析）</span></label>
+          <input id="fHost" type="text" placeholder="example.com">
+        </div>
+        <div class="form-field">
+          <label for="fStatus">数据状态</label>
+          <select id="fStatus">
+            <option value="active">正常</option>
+            <option value="archived">已归档</option>
+            <option value="deleted">已删除</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>分词结果 <span>（保存后自动写入）</span></label>
+          <input id="fWordsHint" type="text" value="自动分词并写入 word_stats" disabled>
+        </div>
+        <div class="form-field full">
+          <label for="fContent">正文内容 <span>（必填，至少 10 字）</span></label>
+          <textarea id="fContent" placeholder="粘贴或编辑正文，保存时会重新分词并更新数据库…"></textarea>
+          <span class="hint" id="contentHint">0 字</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="modal-error" id="modalError"></span>
+      <button type="button" class="btn-ghost" id="modalCancel">取消</button>
+      <button type="button" class="btn-primary" id="modalSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var state = {
+    page: 1,
+    size: 20,
+    q: "",
+    host: "",
+    status: "",
+    sort: "created_at",
+    order: "desc",
+    totalPages: 1,
+    editingId: null,
+    selected: new Set(),
+    items: []
+  };
+
+  var el = {};
+  var searchTimer = null;
+
+  /* ------------------------------------------------------------------ */
+  /* 工具                                                               */
+  /* ------------------------------------------------------------------ */
+  function $(sel) { return document.querySelector(sel); }
+
+  function escapeHtml(value) {
+    return String(value === undefined || value === null ? "" : value).replace(
+      /[&<>"']/g,
+      function (ch) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+      }
+    );
+  }
+
+  function toast(message, type) {
+    var node = el.toast;
+    node.textContent = message;
+    node.className = "toast show" + (type ? " " + type : "");
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function () { node.className = "toast"; }, 2800);
+  }
+
+  function formatTime(iso) {
+    if (!iso) return "—";
+    return String(iso).replace("T", " ").slice(0, 16);
+  }
+
+  async function api(url, options) {
+    var response = await fetch(url, Object.assign({ credentials: "same-origin" }, options || {}));
+    var data = null;
+    try { data = await response.json(); } catch (err) { data = null; }
+    if (!response.ok || !data || data.ok === false) {
+      var error = (data && data.error) || { message: "请求失败（HTTP " + response.status + "）" };
+      throw new Error(error.message || "请求失败");
+    }
+    return data;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 看板                                                               */
+  /* ------------------------------------------------------------------ */
+  async function loadStats() {
+    try {
+      var data = await api("/api/admin/stats");
+      renderStats(data.stats);
+      renderHostOptions(data.stats.sources || data.stats.hosts || []);
+    } catch (err) {
+      toast("看板加载失败：" + err.message, "error");
+    }
+  }
+
+  function renderStats(stats) {
+    el.kpiTotal.textContent = stats.total;
+    el.kpiTotalSub.textContent = "条 · 共 " + Number(stats.total_chars).toLocaleString() + " 字";
+    el.kpiActive.textContent = stats.active;
+    el.kpiActiveSub.textContent = "可参与词云生成" + (stats.archived ? " · 归档 " + stats.archived : "");
+    el.kpiDeleted.textContent = stats.deleted;
+    el.kpiWords.textContent = Number(stats.word_rows).toLocaleString();
+    el.kpiWordsSub.textContent = "去重 " + stats.unique_words + " 词";
+    el.kpiChars.textContent = stats.avg_chars;
+
+    var maxHost = Math.max.apply(null, [1].concat((stats.hosts || []).map(function (h) { return h.count; })));
+    el.hostChart.innerHTML = (stats.hosts || []).length
+      ? stats.hosts.map(function (item) {
+          return '<div class="bar-row"><span class="bar-label" title="' + escapeHtml(item.host) + '">' +
+            escapeHtml(item.host) + '</span><span class="bar-track"><span class="bar-fill indigo" style="width:' +
+            Math.max(4, Math.round(item.count * 100 / maxHost)) + '%"></span></span><span class="bar-value">' +
+            (item.percent !== undefined ? item.percent + "%" : item.count) + "</span></div>";
+        }).join("")
+      : '<div class="bar-row"><span class="bar-label">暂无数据</span><span class="bar-track"></span><span class="bar-value">—</span></div>';
+
+    var maxWord = Math.max.apply(null, [1].concat((stats.top_words || []).map(function (w) { return w.frequency; })));
+    el.wordChart.innerHTML = (stats.top_words || []).length
+      ? stats.top_words.map(function (item) {
+          return '<div class="bar-row"><span class="bar-label" title="' + escapeHtml(item.word) + '">' +
+            escapeHtml(item.word) + '</span><span class="bar-track"><span class="bar-fill" style="width:' +
+            Math.max(4, Math.round(item.frequency * 100 / maxWord)) + '%"></span></span><span class="bar-value">' +
+            item.frequency + "</span></div>";
+        }).join("")
+      : '<div class="bar-row"><span class="bar-label">暂无数据</span><span class="bar-track"></span><span class="bar-value">—</span></div>';
+
+    var maxDay = Math.max.apply(null, [1].concat((stats.daily || []).map(function (d) { return d.count; })));
+    el.trendChart.innerHTML = (stats.daily || []).map(function (item) {
+      var height = Math.max(3, Math.round(item.count * 100 / maxDay));
+      return '<div class="trend-col" title="' + item.date + " · " + item.count + ' 条"><div class="trend-bar" style="height:' +
+        height + '%"></div><span class="trend-day">' + escapeHtml(item.date) + "</span></div>";
+    }).join("");
+  }
+
+  function renderHostOptions(sources) {
+    var current = el.hostFilter.value;
+    el.hostFilter.innerHTML = '<option value="">全部来源</option>' + sources.map(function (item) {
+      return '<option value="' + escapeHtml(item.host) + '">' + escapeHtml(item.host) +
+        "（" + item.count + "）</option>";
+    }).join("");
+    el.hostFilter.value = current;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 列表                                                               */
+  /* ------------------------------------------------------------------ */
+  async function loadPages() {
+    var params = new URLSearchParams({
+      page: state.page,
+      size: state.size,
+      q: state.q,
+      host: state.host,
+      status: state.status,
+      sort: state.sort,
+      order: state.order
+    });
+    try {
+      var data = await api("/api/admin/pages?" + params.toString());
+      state.items = data.items || [];
+      state.totalPages = data.pages || 1;
+      state.page = data.page || 1;
+      state.selected.clear();
+      renderTable(state.items);
+      renderPager(data);
+      renderHostOptions(data.sources || []);
+      el.batchDeleteBtn.disabled = true;
+      el.checkAll.checked = false;
+    } catch (err) {
+      el.tableBody.innerHTML = '<tr class="empty-row"><td colspan="9">加载失败：' +
+        escapeHtml(err.message) + "</td></tr>";
+    }
+  }
+
+  function statusTag(status) {
+    var map = { active: ["正常", "active"], archived: ["已归档", "archived"], deleted: ["已删除", "deleted"] };
+    var item = map[status] || ["未知", "deleted"];
+    return '<span class="tag ' + item[1] + '">' + item[0] + "</span>";
+  }
+
+  function renderTable(items) {
+    if (!items.length) {
+      el.tableBody.innerHTML = '<tr class="empty-row"><td colspan="9">没有符合条件的数据，试试调整筛选条件或点击「新增数据」。</td></tr>';
+      return;
+    }
+    el.tableBody.innerHTML = items.map(function (item) {
+      var deleted = item.status === "deleted";
+      var actions = '<button type="button" class="mini-btn" data-action="edit" data-id="' + item.id + '">编辑</button>' +
+        '<button type="button" class="mini-btn" data-action="analyze" data-id="' + item.id + '">重新分词</button>';
+      actions += deleted
+        ? '<button type="button" class="mini-btn" data-action="restore" data-id="' + item.id + '">恢复</button>' +
+          '<button type="button" class="mini-btn danger" data-action="purge" data-id="' + item.id + '">彻底删除</button>'
+        : '<button type="button" class="mini-btn danger" data-action="delete" data-id="' + item.id + '">删除</button>';
+
+      return '<tr data-id="' + item.id + '" class="' + (deleted ? "is-deleted" : "") + '">' +
+        '<td><input type="checkbox" class="row-check" data-id="' + item.id + '" aria-label="选择第 ' + item.id + ' 条"></td>' +
+        "<td class=\"num\">" + item.id + "</td>" +
+        '<td class="cell-title"><b title="' + escapeHtml(item.title) + '">' + escapeHtml(item.title) + "</b>" +
+          "<small>" + escapeHtml(item.url) + "</small></td>" +
+        '<td><span class="tag host">' + escapeHtml(item.host || "未知") + "</span></td>" +
+        '<td class="num">' + Number(item.char_count).toLocaleString() + "</td>" +
+        '<td class="num">' + item.word_count + "</td>" +
+        "<td>" + statusTag(item.status) + "</td>" +
+        '<td class="num">' + formatTime(item.created_at) + "</td>" +
+        '<td><div class="row-actions">' + actions + "</div></td></tr>";
+    }).join("");
+  }
+
+  function renderPager(data) {
+    var start = data.total === 0 ? 0 : (data.page - 1) * data.size + 1;
+    var end = Math.min(data.page * data.size, data.total);
+    el.pagerInfo.textContent = "共 " + data.total + " 条 · 当前显示 " + start + "-" + end;
+    el.pageIndicator.textContent = data.page + " / " + data.pages;
+    el.prevBtn.disabled = data.page <= 1;
+    el.nextBtn.disabled = data.page >= data.pages;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 弹窗：新增 / 编辑                                                   */
+  /* ------------------------------------------------------------------ */
+  function openModal(page) {
+    state.editingId = page ? page.id : null;
+    el.modalTitle.textContent = page ? "编辑数据 #" + page.id : "新增数据";
+    el.fUrl.value = page ? page.url : "";
+    el.fTitle.value = page ? page.title : "";
+    el.fHost.value = page ? page.host : "";
+    el.fStatus.value = page ? page.status : "active";
+    el.fContent.value = page ? page.content : "";
+    el.fWordsHint.value = page ? (page.words || []).length + " 个词条（保存后重算）" : "自动分词并写入 word_stats";
+    el.modalError.textContent = "";
+    updateContentHint();
+    el.modalMask.hidden = false;
+    el.fUrl.focus();
+  }
+
+  function closeModal() {
+    el.modalMask.hidden = true;
+    state.editingId = null;
+  }
+
+  function updateContentHint() {
+    el.contentHint.textContent = el.fContent.value.trim().length + " 字";
+  }
+
+  async function saveModal() {
+    var payload = {
+      url: el.fUrl.value.trim(),
+      title: el.fTitle.value.trim(),
+      host: el.fHost.value.trim(),
+      status: el.fStatus.value,
+      content: el.fContent.value.trim()
+    };
+
+    if (!payload.url) { el.modalError.textContent = "请填写来源网址"; return; }
+    if (payload.content.length < 10) { el.modalError.textContent = "正文至少需要 10 个字符"; return; }
+
+    el.modalSave.disabled = true;
+    el.modalError.textContent = "";
+    try {
+      if (state.editingId) {
+        await api("/api/admin/pages/" + state.editingId, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        toast("数据已更新", "success");
+      } else {
+        await api("/api/admin/pages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        toast("数据已新增", "success");
+      }
+      closeModal();
+      await Promise.all([loadPages(), loadStats()]);
+    } catch (err) {
+      el.modalError.textContent = err.message;
+    } finally {
+      el.modalSave.disabled = false;
+    }
+  }
+
+  async function editPage(id) {
+    try {
+      var data = await api("/api/admin/pages/" + id);
+      openModal(data.page);
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 删除 / 恢复 / 重新分词                                              */
+  /* ------------------------------------------------------------------ */
+  async function deleteOne(id, hard) {
+    if (!window.confirm(hard ? "彻底删除后数据不可恢复，确定继续？" : "确定逻辑删除这条数据？（可在「已删除」中恢复）")) return;
+    try {
+      await api("/api/admin/pages/" + id + (hard ? "?hard=1" : ""), { method: "DELETE" });
+      toast(hard ? "已彻底删除" : "已逻辑删除");
+      await Promise.all([loadPages(), loadStats()]);
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  async function batchDelete() {
+    var ids = Array.from(state.selected);
+    if (!ids.length) return;
+    if (!window.confirm("确定逻辑删除选中的 " + ids.length + " 条数据？")) return;
+    try {
+      await api("/api/admin/pages", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: ids })
+      });
+      toast("已删除 " + ids.length + " 条数据", "success");
+      await Promise.all([loadPages(), loadStats()]);
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  async function restoreOne(id) {
+    try {
+      await api("/api/admin/pages/" + id + "/restore", { method: "POST" });
+      toast("数据已恢复", "success");
+      await Promise.all([loadPages(), loadStats()]);
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  async function reanalyze(id) {
+    try {
+      var data = await api("/api/admin/pages/" + id + "/analyze", { method: "POST" });
+      toast("已重新分词，共 " + data.words + " 个词条", "success");
+      await Promise.all([loadPages(), loadStats()]);
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 事件绑定                                                           */
+  /* ------------------------------------------------------------------ */
+  function bind() {
+    el.kpiTotal = $("#kpiTotal");
+    el.kpiTotalSub = $("#kpiTotalSub");
+    el.kpiActive = $("#kpiActive");
+    el.kpiActiveSub = $("#kpiActiveSub");
+    el.kpiDeleted = $("#kpiDeleted");
+    el.kpiWords = $("#kpiWords");
+    el.kpiWordsSub = $("#kpiWordsSub");
+    el.kpiChars = $("#kpiChars");
+    el.hostChart = $("#hostChart");
+    el.wordChart = $("#wordChart");
+    el.trendChart = $("#trendChart");
+    el.tableBody = $("#tableBody");
+    el.pagerInfo = $("#pagerInfo");
+    el.pageIndicator = $("#pageIndicator");
+    el.prevBtn = $("#prevBtn");
+    el.nextBtn = $("#nextBtn");
+    el.searchInput = $("#searchInput");
+    el.hostFilter = $("#hostFilter");
+    el.statusFilter = $("#statusFilter");
+    el.sortSelect = $("#sortSelect");
+    el.sizeSelect = $("#sizeSelect");
+    el.checkAll = $("#checkAll");
+    el.batchDeleteBtn = $("#batchDeleteBtn");
+    el.refreshBtn = $("#refreshBtn");
+    el.createBtn = $("#createBtn");
+    el.modalMask = $("#modalMask");
+    el.modalTitle = $("#modalTitle");
+    el.modalClose = $("#modalClose");
+    el.modalCancel = $("#modalCancel");
+    el.modalSave = $("#modalSave");
+    el.modalError = $("#modalError");
+    el.fUrl = $("#fUrl");
+    el.fTitle = $("#fTitle");
+    el.fHost = $("#fHost");
+    el.fStatus = $("#fStatus");
+    el.fContent = $("#fContent");
+    el.fWordsHint = $("#fWordsHint");
+    el.contentHint = $("#contentHint");
+    el.toast = $("#toast");
+
+    el.searchInput.addEventListener("input", function () {
+      clearTimeout(searchTimer);
+      var value = el.searchInput.value.trim();
+      searchTimer = setTimeout(function () {
+        state.q = value;
+        state.page = 1;
+        loadPages();
+      }, 320);
+    });
+
+    el.hostFilter.addEventListener("change", function () {
+      state.host = el.hostFilter.value;
+      state.page = 1;
+      loadPages();
+    });
+
+    el.statusFilter.addEventListener("change", function () {
+      state.status = el.statusFilter.value;
+      state.page = 1;
+      loadPages();
+    });
+
+    el.sortSelect.addEventListener("change", function () {
+      var parts = el.sortSelect.value.split(":");
+      state.sort = parts[0];
+      state.order = parts[1];
+      state.page = 1;
+      loadPages();
+    });
+
+    el.sizeSelect.addEventListener("change", function () {
+      state.size = parseInt(el.sizeSelect.value, 10) || 20;
+      state.page = 1;
+      loadPages();
+    });
+
+    el.prevBtn.addEventListener("click", function () {
+      if (state.page > 1) { state.page -= 1; loadPages(); }
+    });
+
+    el.nextBtn.addEventListener("click", function () {
+      if (state.page < state.totalPages) { state.page += 1; loadPages(); }
+    });
+
+    el.refreshBtn.addEventListener("click", function () {
+      Promise.all([loadPages(), loadStats()]);
+      toast("已刷新");
+    });
+
+    el.checkAll.addEventListener("change", function () {
+      var checked = el.checkAll.checked;
+      document.querySelectorAll(".row-check").forEach(function (box) {
+        box.checked = checked;
+        var id = parseInt(box.dataset.id, 10);
+        if (checked) state.selected.add(id);
+        else state.selected.delete(id);
+      });
+      el.batchDeleteBtn.disabled = state.selected.size === 0;
+      el.batchDeleteBtn.textContent = state.selected.size ? "批量删除（" + state.selected.size + "）" : "批量删除";
+    });
+
+    el.tableBody.addEventListener("change", function (event) {
+      var box = event.target.closest(".row-check");
+      if (!box) return;
+      var id = parseInt(box.dataset.id, 10);
+      if (box.checked) state.selected.add(id);
+      else state.selected.delete(id);
+      el.batchDeleteBtn.disabled = state.selected.size === 0;
+      el.batchDeleteBtn.textContent = state.selected.size ? "批量删除（" + state.selected.size + "）" : "批量删除";
+    });
+
+    el.tableBody.addEventListener("click", function (event) {
+      var btn = event.target.closest("[data-action]");
+      if (!btn) return;
+      var id = parseInt(btn.dataset.id, 10);
+      var action = btn.dataset.action;
+      if (action === "edit") editPage(id);
+      else if (action === "delete") deleteOne(id, false);
+      else if (action === "purge") deleteOne(id, true);
+      else if (action === "restore") restoreOne(id);
+      else if (action === "analyze") reanalyze(id);
+    });
+
+    el.batchDeleteBtn.addEventListener("click", batchDelete);
+    el.createBtn.addEventListener("click", function () { openModal(null); });
+    el.modalClose.addEventListener("click", closeModal);
+    el.modalCancel.addEventListener("click", closeModal);
+    el.modalSave.addEventListener("click", saveModal);
+    el.fContent.addEventListener("input", updateContentHint);
+
+    el.modalMask.addEventListener("click", function (event) {
+      if (event.target === el.modalMask) closeModal();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !el.modalMask.hidden) closeModal();
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s" && !el.modalMask.hidden) {
+        event.preventDefault();
+        saveModal();
+      }
+    });
+
+    var logout = $("#logoutBtn");
+    if (logout) {
+      logout.addEventListener("click", async function () {
+        try { await api("/api/logout", { method: "POST" }); } catch (err) { /* 忽略 */ }
+        window.location.href = "/login";
+      });
+    }
+  }
+
+  bind();
+  loadStats();
+  loadPages();
+})();
+</script>
+</body>
+</html>
